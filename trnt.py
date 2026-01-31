@@ -3,6 +3,8 @@ Core document creation functions for Trenton
 """
 
 import markdown
+import argparse
+import sys
 from weasyprint import HTML, CSS
 from docx import Document
 from docx.shared import Pt
@@ -56,3 +58,60 @@ def document_creation_prompt() -> str:
 When asked to create a document, always create a sample markdown file first using the create_markdown_file tool.
 After creating the markdown file, you may convert it to other formats onl when asked.
 Always ask for clarification on formatting preferences and ensure content is properly structured."""
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Trenton: Document Creation Assistant",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python trnt.py create report.md
+  python trnt.py to-pdf report.md report.pdf
+  python trnt.py to-word report.md report.docx
+  python trnt.py guide
+        """
+    )
+    
+    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    
+    # Create command
+    create_parser = subparsers.add_parser('create', help='Create a new empty markdown file')
+    create_parser.add_argument('file', help='Filename for the markdown file')
+    
+    # Convert to PDF command
+    pdf_parser = subparsers.add_parser('to-pdf', help='Convert markdown to PDF')
+    pdf_parser.add_argument('input', help='Input markdown file')
+    pdf_parser.add_argument('output', help='Output PDF file')
+    
+    # Convert to Word command
+    word_parser = subparsers.add_parser('to-word', help='Convert markdown to Word')
+    word_parser.add_argument('input', help='Input markdown file')
+    word_parser.add_argument('output', help='Output Word file')
+    
+    # Guide command
+    subparsers.add_parser('guide', help='Show document creation guide')
+    
+    args = parser.parse_args()
+    
+    try:
+        if args.command == 'create':
+            result = create_markdown_file(args.file, '')
+            print(result)
+        elif args.command == 'to-pdf':
+            result = convert_markdown_to_pdf(args.input, args.output)
+            print(result)
+        elif args.command == 'to-word':
+            result = convert_markdown_to_word(args.input, args.output)
+            print(result)
+        elif args.command == 'guide':
+            print(document_creation_prompt())
+        else:
+            parser.print_help()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
