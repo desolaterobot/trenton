@@ -1,0 +1,4 @@
+fastmcp
+markdown
+weasyprint
+python-docx
